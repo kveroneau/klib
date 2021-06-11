@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="4">
+    <Name Value="klib"/>
+    <Type Value="RunTimeOnly"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Version Minor="4"/>
+    <Files Count="7">
+      <Item1>
+        <Filename Value="unixsignals.pas"/>
+        <UnitName Value="UnixSignals"/>
+      </Item1>
+      <Item2>
+        <Filename Value="crthelper.pas"/>
+        <UnitName Value="crthelper"/>
+      </Item2>
+      <Item3>
+        <Filename Value="homecu.pas"/>
+        <UnitName Value="homecu"/>
+      </Item3>
+      <Item4>
+        <Filename Value="kevtel.pas"/>
+        <UnitName Value="kevtel"/>
+      </Item4>
+      <Item5>
+        <Filename Value="piservice.pas"/>
+        <UnitName Value="piservice"/>
+      </Item5>
+      <Item6>
+        <Filename Value="pisound.pas"/>
+        <UnitName Value="pisound"/>
+      </Item6>
+      <Item7>
+        <Filename Value="phue.pas"/>
+        <UnitName Value="phue"/>
+      </Item7>
+    </Files>
+    <RequiredPkgs Count="1">
+      <Item1>
+        <PackageName Value="FCL"/>
+      </Item1>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
