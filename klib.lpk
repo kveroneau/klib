@@ -8,9 +8,19 @@
       <SearchPaths>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <CodeGeneration>
+        <Optimizations>
+          <OptimizationLevel Value="2"/>
+        </Optimizations>
+      </CodeGeneration>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="False"/>
+        </Debugging>
+      </Linking>
     </CompilerOptions>
-    <Version Minor="4"/>
-    <Files Count="7">
+    <Version Minor="5"/>
+    <Files Count="8">
       <Item1>
         <Filename Value="unixsignals.pas"/>
         <UnitName Value="UnixSignals"/>
@@ -39,6 +49,10 @@
         <Filename Value="phue.pas"/>
         <UnitName Value="phue"/>
       </Item7>
+      <Item8>
+        <Filename Value="urllib.pas"/>
+        <UnitName Value="urllib"/>
+      </Item8>
     </Files>
     <RequiredPkgs Count="1">
       <Item1>

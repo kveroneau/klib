@@ -101,6 +101,8 @@ begin
     FConfig:=TJSONObject(GetConfig(False));
   except
     On ESocketError do FConfig:=Nil;
+    On EHTTPClient do FConfig:=Nil;
+    On EJSONParser do FConfig:=Nil;
   end;
   if Assigned(FConfig) then
     IVRResult:=''
@@ -122,10 +124,11 @@ end;
 
 function TIVR.GetBusy: string;
 begin
+  Result:='';
+  if FConfig = Nil then
+    Exit;
   if FConfig.Types['BUSY'] = jtString then
     Result:=FConfig.Strings['BUSY']
-  else
-    Result:='';
 end;
 
 procedure TIVR.SetBusy(AValue: string);
@@ -154,6 +157,9 @@ end;
 
 function TIVR.GetSleeping: boolean;
 begin
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
   Result:=FConfig.Booleans['SLEEPING'];
 end;
 
@@ -171,6 +177,9 @@ end;
 
 function TIVR.GetHome: boolean;
 begin
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
   Result:=FConfig.Booleans['HOME'];
 end;
 
@@ -189,10 +198,11 @@ end;
 function TIVR.GetFrontDoor: string;
 begin
   UpdateConfig;
+  Result:='';
+  if FConfig = Nil then
+    Exit;
   if FConfig.Objects['FRONT_DOOR'].Booleans['open'] then
     Result:=FConfig.Objects['FRONT_DOOR'].Strings['who']
-  else
-    Result:='';
 end;
 
 procedure TIVR.SetFrontDoor(value: string);

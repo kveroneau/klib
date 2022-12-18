@@ -11,20 +11,23 @@ type
 
   { THueBridge }
 
-  THueBridge = class(TObject)
+  THueBridge = class(TComponent)
   public
-    constructor Create;
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
   private
     FConfig: TJSONObject;
     FLights: TJSONObject;
     FLightCount: Integer;
     function GetRequest(uri: string): TJSONData;
+    function PutRequest(uri: string; data: string): TJSONData;
     function GetName: String;
     function GetWhitelist: TJSONObject;
     function GetUser: TJSONObject;
     function GetLight(Index: Integer): TJSONObject;
   public
+    procedure Refresh;
+    procedure SetState(light: Integer; lit: Boolean; bri, hue, sat: Integer);
     property Config: TJSONObject read FConfig;
     property Lights[Index: Integer]: TJSONObject read GetLight;
     property LightCount: Integer read FLightCount;
@@ -41,8 +44,9 @@ const
 
 { THueBridge }
 
-constructor THueBridge.Create;
+constructor THueBridge.Create(AOwner: TComponent);
 begin
+  inherited Create(AOwner);
   FConfig:=TJSONObject(GetRequest('config'));
   FLights:=TJSONObject(GetRequest('lights'));
   FLightCount:=FLights.Count;
@@ -62,6 +66,19 @@ begin
       KeepConnection:=False;
       Result:=GetJSON(Get('http://'+HUE_IP+'/api/'+HUE_USER+'/'+uri));
     finally
+      Free;
+    end;
+end;
+
+function THueBridge.PutRequest(uri: string; data: string): TJSONData;
+begin
+  with TFPHTTPClient.Create(Nil) do
+    try
+      KeepConnection:=False;
+      RequestBody:=TStringStream.Create(data);
+      Result:=GetJSON(Put('http://'+HUE_IP+'/api/'+HUE_USER+'/'+uri));
+    finally
+      RequestBody.Free;
       Free;
     end;
 end;
@@ -86,6 +103,35 @@ begin
   Result:=Nil;
   if (Index > 0) and (Index < FLights.Count+1) then
     Result:=TJSONObject(FLights.Objects[IntToStr(Index)]);
+end;
+
+procedure THueBridge.Refresh;
+begin
+  FLights.Free;
+  FLights:=TJSONObject(GetRequest('lights'));
+  FLightCount:=FLights.Count;
+end;
+
+procedure THueBridge.SetState(light: Integer; lit: Boolean; bri, hue,
+  sat: Integer);
+var
+  state: TJSONObject;
+  r: TJSONData;
+  s: TStringStream;
+begin
+  state:=TJSONObject.Create;
+  state.Add('on', lit);
+  state.Add('bri', bri);
+  state.Add('hue', hue);
+  state.Add('sat', sat);
+  s:=TStringStream.Create;
+  state.DumpJSON(s);
+  state.Free;
+  r:=PutRequest('lights/'+IntToStr(light)+'/state', s.DataString);
+  {r.DumpJSON(s);}
+  {WriteLn(s.DataString);}
+  s.Free;
+  r.Free;
 end;
 
 end.

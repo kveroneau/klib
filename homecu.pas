@@ -5,7 +5,7 @@ unit homecu;
 interface
 
 uses
-  Classes, SysUtils, fphttpclient, fpjson, jsonparser, ssockets;
+  Classes, SysUtils, fphttpclient, fpjson, jsonparser, ssockets, urllib;
 
 type
 
@@ -18,6 +18,7 @@ type
     procedure Strips;
     procedure AllOff;
     procedure LivingRoom;
+    procedure Brightness(value: word);
     procedure Hue(hue: word);
     procedure Theme(name: string);
     procedure SaveTheme(name: string);
@@ -31,7 +32,7 @@ type
     procedure Firewall(ip: string);
     procedure Admin(host: string);
     procedure Lock(host: string);
-    procedure Say(msg: string);
+    procedure Say(const msg: string);
     procedure UpdateConfig;
     procedure SetTimer(minutes: integer; msg: string);
   private
@@ -73,7 +74,7 @@ type
   TCUProtocol = packed record
     id: Integer;
     op: byte;
-    data: string[80];
+    data: string[255];
   end;
 
   { THomeCUTCP }
@@ -99,6 +100,8 @@ type
   public
     constructor Create;
     procedure Stop;
+    procedure Say(const msg: string);
+    procedure Log(const msg: string);
     property OnSay: TSayEvent read FOnSay write FOnSay;
     property OnLog: TLogEvent read FOnLog write FOnLog;
     property OnCmd: TCmdEvent read FOnCmd write FOnCmd;
@@ -206,6 +209,16 @@ begin
   SendCommand(255, 'exit');
 end;
 
+procedure THomeCUTCP.Say(const msg: string);
+begin
+  SendCommand(10, msg);
+end;
+
+procedure THomeCUTCP.Log(const msg: string);
+begin
+  SendCommand(20, msg);
+end;
+
 constructor THomeCU.Create;
 begin
   FConfig:=Nil;
@@ -231,6 +244,11 @@ end;
 procedure THomeCU.LivingRoom;
 begin
   HomeCUGet('living');
+end;
+
+procedure THomeCU.Brightness(value: word);
+begin
+  HomeCUGet('brightness?value='+IntToStr(value));
 end;
 
 procedure THomeCU.Hue(hue: word);
@@ -298,7 +316,7 @@ begin
   HomeCUGet('lck?machine='+host);
 end;
 
-procedure THomeCU.Say(msg: string);
+procedure THomeCU.Say(const msg: string);
 begin
   with TFPHTTPClient.Create(Nil) do
     try
@@ -306,6 +324,7 @@ begin
       RequestBody:=TStringStream.Create(msg);
       CUResult:=Post(URL+'say');
     finally
+      RequestBody.Free;
       Free;
     end;
 end;
@@ -326,13 +345,11 @@ end;
 
 function THomeCU.GetConfig: TJSONData;
 begin
-  with TFPHTTPClient.Create(Nil) do
-    try
-      KeepConnection:=False;
-      Result:=GetJSON(Get(URL+'health'));
-    finally
-      Free;
-    end;
+  try
+    Result:=GetJSON(URLGet(URL+'health'));
+  except
+    On EJSONParser do Result:=Nil;
+  end;
 end;
 
 procedure THomeCU.UpdateConfig;
@@ -343,6 +360,8 @@ begin
     FConfig:=TJSONObject(GetConfig);
   except
     On ESocketError do FConfig:=Nil;
+    On EHTTPClient do FConfig:=Nil;
+    On EJSONParser do FConfig:=Nil;
   end;
   if Assigned(FConfig) then
     CUResult:=''
@@ -369,27 +388,62 @@ end;
 
 function THomeCU.GetRooms: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['rooms'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['rooms'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetPause: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['paused'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['paused'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetWakeme: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['wakeme'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['wakeme'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetWeather: TJSONObject;
 begin
-  Result:=FConfig.Objects['weather'];
+  Result:=Nil;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['weather'];
+  except
+    On EJSON do Result:=Nil;
+  end;
 end;
 
 function THomeCU.GetAvailable: TJSONObject;
 begin
-  Result:=FConfig.Objects['available'];
+  Result:=Nil;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['available'];
+  except
+    On EJSON do Result:=Nil;
+  end;
 end;
 
 procedure THomeCU.SetRooms(value: Boolean);
@@ -421,22 +475,50 @@ end;
 
 function THomeCU.GetSleeping: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['sleeping'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['sleeping'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetDarkMode: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['dark'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['dark'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetHomeMode: boolean;
 begin
-  Result:=FConfig.Objects['config'].Booleans['home'];
+  Result:=False;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Objects['config'].Booleans['home'];
+  except
+    On EJSON do Result:=False;
+  end;
 end;
 
 function THomeCU.GetLights: TJSONArray;
 begin
-  Result:=FConfig.Arrays['lights'];
+  Result:=Nil;
+  if FConfig = Nil then
+    Exit;
+  try
+    Result:=FConfig.Arrays['lights'];
+  except
+    On EJSON do Result:=Nil;
+  end;
 end;
 
 end.
