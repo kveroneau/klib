@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="4">
+    <Name Value="HUDControls"/>
+    <Type Value="RunAndDesignTime"/>
+    <Author Value="Kevin Veroneau"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Description Value="Lazarus IDE visual components for use on my Home Automation Heads Up Displays."/>
+    <Version Minor="2"/>
+    <Files Count="3">
+      <Item1>
+        <Filename Value="segmentdisplay.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="SegmentDisplay"/>
+      </Item1>
+      <Item2>
+        <Filename Value="hudtoggle.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="HUDToggle"/>
+      </Item2>
+      <Item3>
+        <Filename Value="hudbutton.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="HUDButton"/>
+      </Item3>
+    </Files>
+    <RequiredPkgs Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+      </Item2>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+    <CustomOptions Items="ExternHelp" Version="2">
+      <_ExternHelp Items="Count"/>
+    </CustomOptions>
+  </Package>
+</CONFIG>
