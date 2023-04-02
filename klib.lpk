@@ -2,7 +2,6 @@
 <CONFIG>
   <Package Version="4">
     <Name Value="klib"/>
-    <Type Value="RunTimeOnly"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
@@ -13,14 +12,9 @@
           <OptimizationLevel Value="2"/>
         </Optimizations>
       </CodeGeneration>
-      <Linking>
-        <Debugging>
-          <GenerateDebugInfo Value="False"/>
-        </Debugging>
-      </Linking>
     </CompilerOptions>
-    <Version Minor="5"/>
-    <Files Count="8">
+    <Version Minor="9"/>
+    <Files Count="10">
       <Item1>
         <Filename Value="unixsignals.pas"/>
         <UnitName Value="UnixSignals"/>
@@ -53,6 +47,14 @@
         <Filename Value="urllib.pas"/>
         <UnitName Value="urllib"/>
       </Item8>
+      <Item9>
+        <Filename Value="suncalc.pas"/>
+        <UnitName Value="suncalc"/>
+      </Item9>
+      <Item10>
+        <Filename Value="lib6502.pas"/>
+        <UnitName Value="lib6502"/>
+      </Item10>
     </Files>
     <RequiredPkgs Count="1">
       <Item1>
@@ -66,5 +68,8 @@
       <Version Value="2"/>
       <UseFileFilters Value="True"/>
     </PublishOptions>
+    <CustomOptions Items="ExternHelp" Version="2">
+      <_ExternHelp Items="Count"/>
+    </CustomOptions>
   </Package>
 </CONFIG>

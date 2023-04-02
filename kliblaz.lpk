@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="4">
+    <Name Value="klibLaz"/>
+    <Type Value="RunAndDesignTime"/>
+    <Author Value="Kevin Veroneau"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Description Value="Lazarus non-visual components for some klib classes."/>
+    <Version Minor="3"/>
+    <Files Count="2">
+      <Item1>
+        <Filename Value="konsole.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Konsole"/>
+      </Item1>
+      <Item2>
+        <Filename Value="laz6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Laz6502"/>
+      </Item2>
+    </Files>
+    <RequiredPkgs Count="3">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="klib"/>
+        <MaxVersion Minor="7"/>
+        <MinVersion Minor="9" Valid="True"/>
+      </Item2>
+      <Item3>
+        <PackageName Value="FCL"/>
+      </Item3>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+    <CustomOptions Items="ExternHelp" Version="2">
+      <_ExternHelp Items="Count"/>
+    </CustomOptions>
+  </Package>
+</CONFIG>

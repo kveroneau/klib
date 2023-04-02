@@ -236,6 +236,7 @@ var
 begin
   cfg:=TJSONObject(GetConfig(True));
   GetCallID:=cfg.Strings['CALL'];
+  cfg.Free;
 end;
 
 function TIVR.GetCallDataI(cid: string): TJSONData;

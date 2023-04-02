@@ -8,7 +8,8 @@ unit klib;
 interface
 
 uses
-  UnixSignals, crthelper, homecu, kevtel, piservice, pisound, phue, urllib;
+  UnixSignals, crthelper, homecu, kevtel, piservice, pisound, phue, 
+  urllib, suncalc, lib6502;
 
 implementation
 
