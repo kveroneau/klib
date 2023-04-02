@@ -1,5 +1,29 @@
 unit lib6502;
 
+{
+  Converted from lib6502.h into a Pascal unit.  This unit can work with either an object file, or
+  with a shared object file otherwise known as a Dynamically Linked Library on the Windows platform.
+
+  lib6502 repo can be found here: https://github.com/ShonFrazier/lib6502/
+
+  Use the standard make procedure with this project to generate a lib6502.o object file.
+  This object file can then be linked directly with this unit and your program code to create
+  a singular binary image for your end-user.  If you wish to generate an external shared library,
+  here's how:
+
+  On Linux: gcc -shared -o lib6502.so lib6502.o
+  Then place this file into your standard library directory, usually /usr/lib
+
+  On Windows: i686-w64-mingw32-gcc -g -O3 -fPIC -c -o6502.OBJ lib6502.c
+  This will compile the C library into a Windows COFF-compatible OBJ file.
+
+  Create Windows DLL: i686-w64-mingw32-gcc -shared -o 6502.DLL 6502.OBJ
+
+  I also have this written in my notes and will correct if this is actually needed:
+  i686-w64-mingw32-ld -shared 6502.OBJ -lmsvcrt
+  This was done, as I was running into a Microsoft Visual C Runtime error at one point when using it.
+}
+
 {$mode objfpc}{$H+}
 
 interface
