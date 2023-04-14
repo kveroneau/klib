@@ -11,7 +11,7 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="Lazarus non-visual components for some klib classes."/>
-    <Version Minor="3"/>
+    <Version Minor="4"/>
     <Files Count="2">
       <Item1>
         <Filename Value="konsole.pas"/>
@@ -30,8 +30,8 @@
       </Item1>
       <Item2>
         <PackageName Value="klib"/>
-        <MaxVersion Minor="7"/>
-        <MinVersion Minor="9" Valid="True"/>
+        <MaxVersion Minor="9"/>
+        <MinVersion Minor="10" Valid="True"/>
       </Item2>
       <Item3>
         <PackageName Value="FCL"/>

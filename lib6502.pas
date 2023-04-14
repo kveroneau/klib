@@ -60,11 +60,15 @@ Type
   M6502_DumpBuf = array[0..63] of char;
   M6502_CallbackType = (ctRead, ctWrite, ctCall);
 
+  {$PACKENUM 1}{$PACKSET 1}
+  CPUFlags = (flagC, flagZ, flagI, flagD, flagB, flagX, flagV, flagN);
+  TCPUFlags = Set of CPUFlags;
+
   M6502_Registers = record
       a: byte;
       x: byte;
       y: byte;
-      p: byte;
+      p: TCPUFlags;
       s: byte;
       pc: word;
   end;
@@ -90,41 +94,61 @@ Type
   TM6502 = class(TObject)
   private
     FMemory: TBytesStream;
-    F6502: PM6502;
-    FMPUIndex: byte;
-    FOnRead, FOnWrite, FOnCall: T6502Event;
-    function GetRegisters: PM6502_Registers;
-    function ProcessRead(addr: word): longint;
-    function ProcessWrite(addr: word; data: byte): longint;
-    function ProcessCall(addr: word): longint;
+    F6502: Array[0..31] of PM6502;
+    FRunning: Array[0..31] of Boolean;
+    FOnRead, FOnWrite, FOnCall: Array[0..31] of T6502Event;
+    function GetCores: byte;
+    function GetOnCall(core: byte): T6502Event;
+    function GetOnRead(core: byte): T6502Event;
+    function GetOnWrite(core: byte): T6502Event;
+    function GetRegisters(core: byte): PM6502_Registers;
+    function GetCore(mpu: PM6502): byte;
+    function GetRunning(core: byte): Boolean;
+    procedure DeleteCore(core: byte);
+    function ProcessRead(mpu: PM6502; addr: word): longint;
+    function ProcessWrite(mpu: PM6502; addr: word; data: byte): longint;
+    function ProcessCall(mpu: PM6502; addr: word): longint;
+    procedure SetCores(AValue: byte);
+    procedure SetOnCall(core: byte; AValue: T6502Event);
+    procedure SetOnRead(core: byte; AValue: T6502Event);
+    procedure SetOnWrite(core: byte; AValue: T6502Event);
+    procedure SetRunning(core: byte; AValue: Boolean);
   public
-    property Registers: PM6502_Registers read GetRegisters;
+    property Cores: byte read GetCores write SetCores;
+    property Running[core: byte]: Boolean read GetRunning write SetRunning;
+    property Registers[core: byte]: PM6502_Registers read GetRegisters;
     property Memory: TBytesStream read FMemory;
-    property OnRead: T6502Event read FOnRead write FOnRead;
-    property OnWrite: T6502Event read FOnWrite write FOnWrite;
-    property OnCall: T6502Event read FOnCall write FOnCall;
+    property OnRead[core: byte]: T6502Event read GetOnRead write SetOnRead;
+    property OnWrite[core: byte]: T6502Event read GetOnWrite write SetOnWrite;
+    property OnCall[core: byte]: T6502Event read GetOnCall write SetOnCall;
     constructor Create;
     destructor Destroy; override;
-    procedure Reset;
-    procedure NMI;
-    procedure IRQ;
+    function NewCore: byte;
+    procedure ResetCores;
+    procedure ResetMemory;
+    procedure Reset(core: byte);
+    procedure NMI(core: byte);
+    procedure IRQ(core: byte);
     procedure Run;
     procedure Tick;
     procedure Step;
-    procedure SetCallback(typ: M6502_CallbackType; addr: word; fn: M6502_Callback);
-    function GetCallback(typ: M6502_CallbackType; addr: word): M6502_Callback;
-    procedure AddEvent(typ: M6502_CallbackType; addr: word);
-    procedure SetVector(vec, addr: word);
-    function GetVector(vec: word): word;
-    function PopStack: byte;
-    function RTS: word;
-    function RTI: word;
+    procedure SetCallback(core: byte; typ: M6502_CallbackType; addr: word; fn: M6502_Callback);
+    function GetCallback(core: byte; typ: M6502_CallbackType; addr: word): M6502_Callback;
+    procedure AddEvent(core: byte; typ: M6502_CallbackType; addr: word);
+    procedure SetVector(core: byte; vec, addr: word);
+    function GetVector(core: byte; vec: word): word;
+    function PopStack(core: byte): byte;
+    procedure PushStack(core: byte; b: byte);
+    function RTS(core: byte): word;
+    function RTI(core: byte): word;
     procedure WriteByte(b: byte);
     procedure Write(data: string);
+    procedure WriteInto(data: string; addr: word);
     function ReadByte: byte;
     function GetString(addr: word): string;
     procedure LoadFrom(s: TStream);
     procedure LoadInto(s: TStream; addr: word);
+    procedure LoadInto(s: TStream; addr, size: word);
     procedure SaveInto(s: TStream; addr, size: word);
   end;
 
@@ -150,17 +174,13 @@ procedure M6502_pushStack(mpu: PM6502; b: byte);
 function M6502_RTS(mpu: PM6502): word;
 function M6502_RTI(mpu: PM6502): word;
 
+function GetMOS6502: TM6502;
+
 implementation
 
-type
-  PMPUList = ^TMPUList;
-  TMPUList = record
-      i: TM6502;
-      p: PM6502;
-  end;
-
 var
-  MPUList: Array[0..31] of PMPUList;
+  { Only one instance of this is allowed per application. }
+  MOS6502: TM6502;
 
 function M6502_getCallback(mpu: PM6502; typ: M6502_CallbackType; addr: word
   ): M6502_Callback;
@@ -204,7 +224,11 @@ end;
 
 procedure M6502_pushStack(mpu: PM6502; b: byte);
 begin
-
+  with mpu^.registers^ do
+  begin
+    mpu^.memory^[$100+s]:=b;
+    {$R-}Dec(s);{$R+}
+  end;
 end;
 
 function M6502_RTS(mpu: PM6502): word;
@@ -219,144 +243,265 @@ end;
 function M6502_RTI(mpu: PM6502): word;
 var
   ptr: word;
+  b: byte;
 begin
-  mpu^.registers^.p:=M6502_popStack(mpu);
+  b:=M6502_popStack(mpu);
+  Move(b,mpu^.registers^.p,1);
   ptr:=M6502_popStack(mpu);
   ptr:=(M6502_popStack(mpu) shl 8)+ptr;
   Result:=ptr;
 end;
 
-function NextMPU: byte;
+function GetMOS6502: TM6502;
+begin
+  if not Assigned(MOS6502) then
+    MOS6502:=TM6502.Create;
+  Result:=MOS6502;
+end;
+
+function read6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+begin
+  Result:=MOS6502.ProcessRead(mpu, addr);
+end;
+
+function write6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+begin
+  Result:=MOS6502.ProcessWrite(mpu, addr, data);
+end;
+
+function call6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+begin
+  Result:=MOS6502.ProcessCall(mpu, addr);
+end;
+
+{ TM6502 }
+
+function TM6502.GetRegisters(core: byte): PM6502_Registers;
+begin
+  Result:=F6502[core]^.registers;
+end;
+
+function TM6502.GetOnCall(core: byte): T6502Event;
+begin
+  Result:=FOnRead[core];
+end;
+
+function TM6502.GetCores: byte;
+var
+  i: Integer;
+begin
+  Result:=0;
+  for i:=0 to High(F6502) do
+    if Assigned(F6502[i]) then
+      Inc(Result);
+end;
+
+function TM6502.GetOnRead(core: byte): T6502Event;
+begin
+  Result:=FOnRead[core];
+end;
+
+function TM6502.GetOnWrite(core: byte): T6502Event;
+begin
+  Result:=FOnWrite[core];
+end;
+
+function TM6502.GetCore(mpu: PM6502): byte;
 var
   i: byte;
 begin
-  Result:=255;
-  for i:=0 to High(MPUList) do
-    if MPUList[i] = Nil then
+  for i:=0 to High(F6502) do
+    if F6502[i] = mpu then
     begin
       Result:=i;
       Exit;
     end;
 end;
 
-function GetMPU(mpu: PM6502): TM6502;
+function TM6502.GetRunning(core: byte): Boolean;
+begin
+  Result:=FRunning[core];
+end;
+
+function TM6502.NewCore: byte;
 var
   i: byte;
 begin
-  for i:=0 to High(MPUList) do
-    if MPUList[i]^.p = mpu then
+  Result:=255;
+  for i:=0 to High(F6502) do
+    if F6502[i] = Nil then
     begin
-      Result:=MPUList[i]^.i;
+      F6502[i]:=M6502_new(Nil, FMemory.Bytes, Nil);
+      Result:=i;
       Exit;
     end;
 end;
 
-function read6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+procedure TM6502.ResetCores;
+var
+  i: integer;
 begin
-  Result:=GetMPU(mpu).ProcessRead(addr);
+  for i:=0 to High(F6502) do
+    if Assigned(F6502[i]) then
+    begin
+      M6502_delete(F6502[i]);
+      F6502[i]:=M6502_new(Nil, FMemory.Bytes, Nil);
+    end;
 end;
 
-function write6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+procedure TM6502.ResetMemory;
 begin
-  Result:=GetMPU(mpu).ProcessWrite(addr, data);
+  FillByte(FMemory.Bytes[0], FMemory.Size, 0);
 end;
 
-function call6502(mpu: PM6502; addr: word; data: byte): longint; cdecl;
+procedure TM6502.DeleteCore(core: byte);
 begin
-  Result:=GetMPU(mpu).ProcessCall(addr);
+  if F6502[core] = Nil then
+    Exit;
+  M6502_delete(F6502[core]);
+  F6502[core]:=Nil;
 end;
 
-{ TM6502 }
-
-function TM6502.GetRegisters: PM6502_Registers;
+function TM6502.ProcessRead(mpu: PM6502; addr: word): longint;
+var
+  core: byte;
 begin
-  Result:=F6502^.registers;
+  core:=GetCore(mpu);
+  if Assigned(FOnRead[core]) then
+    Result:=FOnRead[core](Self, addr, 0);
 end;
 
-function TM6502.ProcessRead(addr: word): longint;
+function TM6502.ProcessWrite(mpu: PM6502; addr: word; data: byte): longint;
+var
+  core: byte;
 begin
-  if Assigned(FOnRead) then
-    Result:=FOnRead(Self, addr, 0);
+  core:=GetCore(mpu);
+  if Assigned(FOnWrite[core]) then
+    Result:=FOnWrite[core](self, addr, data);
 end;
 
-function TM6502.ProcessWrite(addr: word; data: byte): longint;
+function TM6502.ProcessCall(mpu: PM6502; addr: word): longint;
+var
+  core: byte;
 begin
-  if Assigned(FOnWrite) then
-    Result:=FOnWrite(self, addr, data);
+  core:=GetCore(mpu);
+  if Assigned(FOnCall[core]) then
+    Result:=FOnCall[core](Self, addr, 0);
 end;
 
-function TM6502.ProcessCall(addr: word): longint;
+procedure TM6502.SetCores(AValue: byte);
+var
+  i: integer;
+  c: byte;
 begin
-  if Assigned(FOnCall) then
-    Result:=FOnCall(Self, addr, 0);
+  c:=Cores;
+  if c=AValue then Exit;
+  if AValue > High(F6502) then Exit;
+  if AValue > c then
+    for i:=0 to (AValue-c-1) do
+      NewCore;
+  if AValue < c then
+    for i:=0 to (c-AValue) do
+      DeleteCore(c-i);
+end;
+
+procedure TM6502.SetOnCall(core: byte; AValue: T6502Event);
+begin
+  FOnCall[core]:=AValue;
+end;
+
+procedure TM6502.SetOnRead(core: byte; AValue: T6502Event);
+begin
+  FOnRead[core]:=AValue;
+end;
+
+procedure TM6502.SetOnWrite(core: byte; AValue: T6502Event);
+begin
+  FOnWrite[core]:=AValue;
+end;
+
+procedure TM6502.SetRunning(core: byte; AValue: Boolean);
+begin
+  FRunning[core]:=AValue;
 end;
 
 constructor TM6502.Create;
-var
-  i: byte;
 begin
-  i:=NextMPU;
+  if Assigned(MOS6502) then
+    raise Exception.Create('Only a single instance of TM6502 can exist!');
   FMemory:=TBytesStream.Create;
   FMemory.Size:=65536;
-  F6502:=M6502_new(Nil, FMemory.Bytes, Nil);
-  New(MPUList[i]);
-  MPUList[i]^.i:=Self;
-  MPUList[i]^.p:=F6502;
-  FMPUIndex:=i;
+  FillByte(F6502, SizeOf(F6502), 0);
+  FillByte(FRunning, SizeOf(FRunning), 1);
+  MOS6502:=Self;
 end;
 
 destructor TM6502.Destroy;
+var
+  i: integer;
 begin
-  Dispose(MPUList[FMPUIndex]);
-  MPUList[FMPUIndex]:=Nil;
-  M6502_delete(F6502);
+  MOS6502:=Nil;
+  for i:=0 to High(F6502) do
+    if Assigned(F6502[i]) then
+      M6502_delete(F6502[i]);
   FMemory.Free;
   inherited Destroy;
 end;
 
-procedure TM6502.Reset;
+procedure TM6502.Reset(core: byte);
 begin
-  M6502_reset(F6502);
+  M6502_reset(F6502[core]);
 end;
 
-procedure TM6502.NMI;
+procedure TM6502.NMI(core: byte);
 begin
-  M6502_nmi(F6502);
+  M6502_nmi(F6502[core]);
 end;
 
-procedure TM6502.IRQ;
+procedure TM6502.IRQ(core: byte);
 begin
-  M6502_irq(F6502);
+  M6502_irq(F6502[core]);
 end;
 
 procedure TM6502.Run;
 begin
-  M6502_run(F6502);
+  if Cores = 1 then
+    M6502_run(F6502[0]);
 end;
 
 procedure TM6502.Tick;
+var
+  i: Integer;
 begin
-  M6502_tick(F6502);
+  for i:=0 to High(F6502) do
+    if FRunning[i] then
+      if Assigned(F6502[i]) then
+        M6502_tick(F6502[i]);
 end;
 
 procedure TM6502.Step;
+var
+  i: Integer;
 begin
-  M6502_step(F6502);
+  for i:=0 to High(F6502) do
+    if FRunning[i] then
+      if Assigned(F6502[i]) then
+        M6502_step(F6502[i]);
 end;
 
-procedure TM6502.SetCallback(typ: M6502_CallbackType; addr: word;
+procedure TM6502.SetCallback(core: byte; typ: M6502_CallbackType; addr: word;
   fn: M6502_Callback);
 begin
-  M6502_setCallback(F6502, typ, addr, fn);
+  M6502_setCallback(F6502[core], typ, addr, fn);
 end;
 
-function TM6502.GetCallback(typ: M6502_CallbackType; addr: word
+function TM6502.GetCallback(core: byte; typ: M6502_CallbackType; addr: word
   ): M6502_Callback;
 begin
-  Result:=M6502_getCallback(F6502, typ, addr);
+  Result:=M6502_getCallback(F6502[core], typ, addr);
 end;
 
-procedure TM6502.AddEvent(typ: M6502_CallbackType; addr: word);
+procedure TM6502.AddEvent(core: byte; typ: M6502_CallbackType; addr: word);
 var
   fn: M6502_Callback;
 begin
@@ -365,53 +510,63 @@ begin
     ctWrite: fn:=@write6502;
     ctCall: fn:=@call6502;
   end;
-  SetCallback(typ, addr, fn);
+  SetCallback(core, typ, addr, fn);
 end;
 
-procedure TM6502.SetVector(vec, addr: word);
+procedure TM6502.SetVector(core: byte; vec, addr: word);
 begin
-  M6502_setVector(F6502, vec, addr);
+  M6502_setVector(F6502[core], vec, addr);
 end;
 
-function TM6502.GetVector(vec: word): word;
+function TM6502.GetVector(core: byte; vec: word): word;
 begin
-  Result:=M6502_getVector(F6502, vec);
+  Result:=M6502_getVector(F6502[core], vec);
 end;
 
-function TM6502.PopStack: byte;
+function TM6502.PopStack(core: byte): byte;
 begin
-  Result:=M6502_popStack(F6502);
+  Result:=M6502_popStack(F6502[core]);
 end;
 
-function TM6502.RTS: word;
+procedure TM6502.PushStack(core: byte; b: byte);
 begin
-  Result:=M6502_RTS(F6502);
+  M6502_pushStack(F6502[core], b);
 end;
 
-function TM6502.RTI: word;
+function TM6502.RTS(core: byte): word;
 begin
-  Result:=M6502_RTI(F6502);
+  Result:=M6502_RTS(F6502[core]);
+end;
+
+function TM6502.RTI(core: byte): word;
+begin
+  Result:=M6502_RTI(F6502[core]);
 end;
 
 procedure TM6502.WriteByte(b: byte);
 var
   pc: word;
 begin
-  pc:=Registers^.pc;
+  pc:=Registers[0]^.pc;
   FMemory.Bytes[pc]:=b;
   Inc(pc);
-  Registers^.pc:=pc;
+  Registers[0]^.pc:=pc;
 end;
 
 procedure TM6502.Write(data: string);
 begin
-  Move(data[1], FMemory.Bytes[Registers^.pc], Length(data));
-  Inc(Registers^.pc, Length(data));
+  Move(data[1], FMemory.Bytes[Registers[0]^.pc], Length(data));
+  Inc(Registers[0]^.pc, Length(data));
+end;
+
+procedure TM6502.WriteInto(data: string; addr: word);
+begin
+  Move(data[1], FMemory.Bytes[addr], Length(data));
 end;
 
 function TM6502.ReadByte: byte;
 begin
-  with Registers^ do
+  with Registers[0]^ do
   begin
     Result:=FMemory.Bytes[pc];
     Inc(pc);
@@ -424,14 +579,14 @@ var
   c: char;
 begin
   Result:='';
-  pc:=Registers^.pc;
-  Registers^.pc:=addr;
+  pc:=Registers[0]^.pc;
+  Registers[0]^.pc:=addr;
   repeat
     c:=Chr(ReadByte);
     if c <> #0 then
       Result:=Result+c;
   until c = #0;
-  Registers^.pc:=pc;
+  Registers[0]^.pc:=pc;
 end;
 
 procedure TM6502.LoadFrom(s: TStream);
@@ -447,12 +602,21 @@ begin
   s.Read(FMemory.Bytes[addr], s.Size);
 end;
 
+procedure TM6502.LoadInto(s: TStream; addr, size: word);
+begin
+  s.Read(FMemory.Bytes[addr], size);
+end;
+
 procedure TM6502.SaveInto(s: TStream; addr, size: word);
 begin
   s.Write(FMemory.Bytes[addr], size);
 end;
 
 initialization
-  FillByte(MPUList, SizeOf(MPUList), 0);
+  MOS6502:=Nil;
+
+finalization
+  if Assigned(MOS6502) then
+    MOS6502.Free;
 
 end.
