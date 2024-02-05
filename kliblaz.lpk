@@ -11,18 +11,48 @@
       </SearchPaths>
     </CompilerOptions>
     <Description Value="Lazarus non-visual components for some klib classes."/>
-    <Version Minor="4"/>
-    <Files Count="2">
+    <Version Minor="7"/>
+    <Files Count="8">
       <Item1>
+        <Filename Value="lazmemcard.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="LazMemcard"/>
+      </Item1>
+      <Item2>
+        <Filename Value="laznetcard.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="LazNetcard"/>
+      </Item2>
+      <Item3>
+        <Filename Value="lazkclient.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="LazKClient"/>
+      </Item3>
+      <Item4>
         <Filename Value="konsole.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="Konsole"/>
-      </Item1>
-      <Item2>
+      </Item4>
+      <Item5>
         <Filename Value="laz6502.pas"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="Laz6502"/>
-      </Item2>
+      </Item5>
+      <Item6>
+        <Filename Value="kevshell.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="KevShell"/>
+      </Item6>
+      <Item7>
+        <Filename Value="netmemo.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="NetMemo"/>
+      </Item7>
+      <Item8>
+        <Filename Value="egaconsole.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="EGAConsole"/>
+      </Item8>
     </Files>
     <RequiredPkgs Count="3">
       <Item1>

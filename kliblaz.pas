@@ -8,14 +8,21 @@ unit klibLaz;
 interface
 
 uses
-  Konsole, Laz6502, LazarusPackageIntf;
+  LazMemcard, LazNetcard, LazKClient, Konsole, Laz6502, KevShell, NetMemo, 
+  EGAConsole, LazarusPackageIntf;
 
 implementation
 
 procedure Register;
 begin
+  RegisterUnit('LazMemcard', @LazMemcard.Register);
+  RegisterUnit('LazNetcard', @LazNetcard.Register);
+  RegisterUnit('LazKClient', @LazKClient.Register);
   RegisterUnit('Konsole', @Konsole.Register);
   RegisterUnit('Laz6502', @Laz6502.Register);
+  RegisterUnit('KevShell', @KevShell.Register);
+  RegisterUnit('NetMemo', @NetMemo.Register);
+  RegisterUnit('EGAConsole', @EGAConsole.Register);
 end;
 
 initialization

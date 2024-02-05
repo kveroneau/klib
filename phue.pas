@@ -127,11 +127,14 @@ begin
   s:=TStringStream.Create;
   state.DumpJSON(s);
   state.Free;
-  r:=PutRequest('lights/'+IntToStr(light)+'/state', s.DataString);
-  {r.DumpJSON(s);}
-  {WriteLn(s.DataString);}
-  s.Free;
-  r.Free;
+  try
+    r:=PutRequest('lights/'+IntToStr(light)+'/state', s.DataString);
+    {r.DumpJSON(s);}
+    {WriteLn(s.DataString);}
+    r.Free;
+  finally
+    s.Free;
+  end;
 end;
 
 end.

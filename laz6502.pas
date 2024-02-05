@@ -29,6 +29,7 @@ type
     function GetRegS: byte;
     function GetRegX: byte;
     function GetRegY: byte;
+    function GetRegAX: word;
     function GetRST: word;
     procedure SetCore(AValue: byte);
     procedure SetCores(AValue: byte);
@@ -43,11 +44,14 @@ type
     procedure SetRegS(AValue: byte);
     procedure SetRegX(AValue: byte);
     procedure SetRegY(AValue: byte);
+    procedure SetRegAX(AValue: word);
     procedure SetRST(AValue: word);
     procedure SetRunning(AValue: Boolean);
   protected
 
   public
+    property Cores: byte read GetCores write SetCores;
+    property Core: byte read FCore write SetCore;
     property cpu: TM6502 read F6502;
     property Memory: TBytes read GetMemory;
     property Registers: PM6502_Registers read GetRegisters;
@@ -64,10 +68,10 @@ type
     procedure Run;
     procedure Tick;
     procedure Step;
+    procedure NMI;
+    procedure IRQ;
     procedure ResetMemory;
   published
-    property Cores: byte read GetCores write SetCores;
-    property Core: byte read FCore write SetCore;
     property Running: Boolean read FRunning write SetRunning;
     property OnRead: T6502Event read FOnRead write SetOnRead;
     property OnWrite: T6502Event read FOnWrite write SetOnWrite;
@@ -76,6 +80,7 @@ type
     property RegA: byte read GetRegA write SetRegA;
     property RegX: byte read GetRegX write SetRegX;
     property RegY: byte read GetRegY write SetRegY;
+    property RegAX: word read GetRegAX write SetRegAX;
     property RegP: TCPUFlags read GetRegP write SetRegP;
     property RegS: byte read GetRegS write SetRegS;
     property RegPC: word read GetRegPC write SetRegPC;
@@ -149,6 +154,11 @@ end;
 function T6502.GetRegY: byte;
 begin
   Result:=F6502.Registers[FCore]^.y;
+end;
+
+function T6502.GetRegAX: word;
+begin
+  Result:=(RegX shl 8)+RegA;
 end;
 
 function T6502.GetRST: word;
@@ -226,6 +236,12 @@ begin
   F6502.Registers[FCore]^.y:=AValue;
 end;
 
+procedure T6502.SetRegAX(AValue: word);
+begin
+  RegA:=AValue and $ff;
+  RegX:=AValue shr 8;
+end;
+
 procedure T6502.SetRST(AValue: word);
 begin
   F6502.SetVector(FCore, VEC_RST, AValue);
@@ -233,7 +249,6 @@ end;
 
 procedure T6502.SetRunning(AValue: Boolean);
 begin
-  if FRunning=AValue then Exit;
   F6502.Running[FCore]:=AValue;
   FRunning:=AValue;
 end;
@@ -312,6 +327,16 @@ end;
 procedure T6502.Step;
 begin
   F6502.Step;
+end;
+
+procedure T6502.NMI;
+begin
+  F6502.NMI(FCore);
+end;
+
+procedure T6502.IRQ;
+begin
+  F6502.IRQ(FCore);
 end;
 
 {$DEFINE CL6502}

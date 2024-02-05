@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <Name Value="klib"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -13,8 +13,8 @@
         </Optimizations>
       </CodeGeneration>
     </CompilerOptions>
-    <Version Minor="10"/>
-    <Files Count="10">
+    <Version Minor="15"/>
+    <Files Count="29">
       <Item1>
         <Filename Value="unixsignals.pas"/>
         <UnitName Value="UnixSignals"/>
@@ -32,30 +32,107 @@
         <UnitName Value="kevtel"/>
       </Item4>
       <Item5>
-        <Filename Value="piservice.pas"/>
-        <UnitName Value="piservice"/>
+        <Filename Value="twilioapi.pas"/>
+        <UnitName Value="twilioapi"/>
       </Item5>
       <Item6>
-        <Filename Value="pisound.pas"/>
-        <UnitName Value="pisound"/>
+        <Filename Value="piservice.pas"/>
+        <UnitName Value="piservice"/>
       </Item6>
       <Item7>
-        <Filename Value="phue.pas"/>
-        <UnitName Value="phue"/>
+        <Filename Value="pisound.pas"/>
+        <UnitName Value="pisound"/>
       </Item7>
       <Item8>
-        <Filename Value="urllib.pas"/>
-        <UnitName Value="urllib"/>
+        <Filename Value="phue.pas"/>
+        <UnitName Value="phue"/>
       </Item8>
       <Item9>
-        <Filename Value="suncalc.pas"/>
-        <UnitName Value="suncalc"/>
+        <Filename Value="notifyhelper.pas"/>
+        <UnitName Value="notifyhelper"/>
       </Item9>
       <Item10>
+        <Filename Value="memcard.pas"/>
+        <UnitName Value="memcard"/>
+      </Item10>
+      <Item11>
+        <Filename Value="netcard.pas"/>
+        <UnitName Value="netcard"/>
+      </Item11>
+      <Item12>
+        <Filename Value="kutils.pas"/>
+        <UnitName Value="kutils"/>
+      </Item12>
+      <Item13>
+        <Filename Value="urllib.pas"/>
+        <UnitName Value="urllib"/>
+      </Item13>
+      <Item14>
+        <Filename Value="kserver.pas"/>
+        <UnitName Value="kserver"/>
+      </Item14>
+      <Item15>
+        <Filename Value="kclient.pas"/>
+        <UnitName Value="kclient"/>
+      </Item15>
+      <Item16>
+        <Filename Value="ecweather.pas"/>
+        <UnitName Value="ecweather"/>
+      </Item16>
+      <Item17>
+        <Filename Value="cmdsys.pas"/>
+        <UnitName Value="cmdsys"/>
+      </Item17>
+      <Item18>
+        <Filename Value="suncalc.pas"/>
+        <UnitName Value="suncalc"/>
+      </Item18>
+      <Item19>
+        <Filename Value="forecast.pas"/>
+        <UnitName Value="forecast"/>
+      </Item19>
+      <Item20>
+        <Filename Value="kthreads.pas"/>
+        <UnitName Value="kthreads"/>
+      </Item20>
+      <Item21>
+        <Filename Value="kapi.pas"/>
+        <UnitName Value="kapi"/>
+      </Item21>
+      <Item22>
         <Filename Value="lib6502.pas"/>
         <UnitName Value="lib6502"/>
-      </Item10>
+      </Item22>
+      <Item23>
+        <Filename Value="kbundle.pas"/>
+        <UnitName Value="kbundle"/>
+      </Item23>
+      <Item24>
+        <Filename Value="kipc.pas"/>
+        <UnitName Value="kipc"/>
+      </Item24>
+      <Item25>
+        <Filename Value="ksignals.pas"/>
+        <UnitName Value="ksignals"/>
+      </Item25>
+      <Item26>
+        <Filename Value="klogger.pas"/>
+        <UnitName Value="klogger"/>
+      </Item26>
+      <Item27>
+        <Filename Value="scriptsystem.pas"/>
+        <UnitName Value="ScriptSystem"/>
+      </Item27>
+      <Item28>
+        <Filename Value="qvfs.pas"/>
+        <UnitName Value="qvfs"/>
+      </Item28>
+      <Item29>
+        <Filename Value="qvfsjson.pas"/>
+        <UnitName Value="qvfsjson"/>
+      </Item29>
     </Files>
+    <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="1">
       <Item1>
         <PackageName Value="FCL"/>

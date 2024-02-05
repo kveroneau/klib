@@ -104,7 +104,6 @@ Type
     function GetRegisters(core: byte): PM6502_Registers;
     function GetCore(mpu: PM6502): byte;
     function GetRunning(core: byte): Boolean;
-    procedure DeleteCore(core: byte);
     function ProcessRead(mpu: PM6502; addr: word): longint;
     function ProcessWrite(mpu: PM6502; addr: word; data: byte): longint;
     function ProcessCall(mpu: PM6502; addr: word): longint;
@@ -124,6 +123,7 @@ Type
     constructor Create;
     destructor Destroy; override;
     function NewCore: byte;
+    procedure DeleteCore(core: byte);
     procedure ResetCores;
     procedure ResetMemory;
     procedure Reset(core: byte);
@@ -139,14 +139,18 @@ Type
     function GetVector(core: byte; vec: word): word;
     function PopStack(core: byte): byte;
     procedure PushStack(core: byte; b: byte);
+    function GetAX(core: byte): word;
+    procedure SetAX(core: byte; v: word);
     function RTS(core: byte): word;
+    procedure JSR(core: byte; addr: word);
     function RTI(core: byte): word;
+    procedure PushRTI(core: byte);
     procedure WriteByte(b: byte);
     procedure Write(data: string);
     procedure WriteInto(data: string; addr: word);
     function ReadByte: byte;
     function GetString(addr: word): string;
-    procedure LoadFrom(s: TStream);
+    function LoadFrom(s: TStream): word;
     procedure LoadInto(s: TStream; addr: word);
     procedure LoadInto(s: TStream; addr, size: word);
     procedure SaveInto(s: TStream; addr, size: word);
@@ -172,7 +176,9 @@ procedure M6502_setVector(mpu: PM6502; vec, addr: word);
 function M6502_popStack(mpu: PM6502): byte;
 procedure M6502_pushStack(mpu: PM6502; b: byte);
 function M6502_RTS(mpu: PM6502): word;
+procedure M6502_JSR(mpu: PM6502; addr: word);
 function M6502_RTI(mpu: PM6502): word;
+procedure M6502_pushRTI(mpu: PM6502);
 
 function GetMOS6502: TM6502;
 
@@ -240,6 +246,13 @@ begin
   Result:=ptr+1;
 end;
 
+procedure M6502_JSR(mpu: PM6502; addr: word);
+begin
+  M6502_pushStack(mpu, mpu^.registers^.pc shr 8);
+  M6502_pushStack(mpu, mpu^.registers^.pc and $ff);
+  mpu^.registers^.pc:=addr;
+end;
+
 function M6502_RTI(mpu: PM6502): word;
 var
   ptr: word;
@@ -250,6 +263,16 @@ begin
   ptr:=M6502_popStack(mpu);
   ptr:=(M6502_popStack(mpu) shl 8)+ptr;
   Result:=ptr;
+end;
+
+procedure M6502_pushRTI(mpu: PM6502);
+var
+  b: byte;
+begin
+  Move(mpu^.registers^.p,b,1);
+  M6502_pushStack(mpu, mpu^.registers^.pc shr 8);
+  M6502_pushStack(mpu, mpu^.registers^.pc and $ff);
+  M6502_pushStack(mpu, b);
 end;
 
 function GetMOS6502: TM6502;
@@ -533,14 +556,35 @@ begin
   M6502_pushStack(F6502[core], b);
 end;
 
+function TM6502.GetAX(core: byte): word;
+begin
+  Result:=F6502[core]^.registers^.a + (F6502[core]^.registers^.x shl 8);
+end;
+
+procedure TM6502.SetAX(core: byte; v: word);
+begin
+  F6502[core]^.registers^.a:=v and $ff;
+  F6502[core]^.registers^.x:=v shr 8;
+end;
+
 function TM6502.RTS(core: byte): word;
 begin
   Result:=M6502_RTS(F6502[core]);
 end;
 
+procedure TM6502.JSR(core: byte; addr: word);
+begin
+  M6502_JSR(F6502[core], addr);
+end;
+
 function TM6502.RTI(core: byte): word;
 begin
   Result:=M6502_RTI(F6502[core]);
+end;
+
+procedure TM6502.PushRTI(core: byte);
+begin
+  M6502_pushRTI(F6502[core]);
 end;
 
 procedure TM6502.WriteByte(b: byte);
@@ -589,12 +633,13 @@ begin
   Registers[0]^.pc:=pc;
 end;
 
-procedure TM6502.LoadFrom(s: TStream);
+function TM6502.LoadFrom(s: TStream): word;
 var
   addr: word;
 begin
   addr:=s.ReadWord;
   s.Read(FMemory.Bytes[addr], s.Size);
+  Result:=addr;
 end;
 
 procedure TM6502.LoadInto(s: TStream; addr: word);

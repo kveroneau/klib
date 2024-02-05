@@ -8,8 +8,10 @@ unit klib;
 interface
 
 uses
-  UnixSignals, crthelper, homecu, kevtel, piservice, pisound, phue, 
-  urllib, suncalc, lib6502;
+  UnixSignals, crthelper, homecu, kevtel, twilioapi, piservice, pisound, phue, 
+  notifyhelper, memcard, netcard, kutils, urllib, kserver, kclient, ecweather, 
+  cmdsys, suncalc, forecast, kthreads, kapi, lib6502, kbundle, kipc, ksignals, 
+  klogger, ScriptSystem, qvfs, qvfsjson;
 
 implementation
 

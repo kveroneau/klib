@@ -50,7 +50,7 @@ implementation
 
 const
   {$IFDEF CPUARM}
-  PLAY_CMD = '/usr/bin/paplay'; { Change to 'aplay' with no-desktop }
+  PLAY_CMD = '/usr/bin/aplay'; { Change to 'aplay' with no-desktop }
   {$ELSE}
   PLAY_CMD = '/usr/bin/paplay';
   {$ENDIF}

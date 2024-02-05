@@ -22,6 +22,7 @@ type
     FKonsoleMode: TKonsoleMode;
     FOnCharacter: TKeyPressEvent;
     FOnCommand: TKonsoleEvent;
+    FPrompt: string;
     procedure KonsoleKeyPress(Sender: TObject; var Key: char);
   protected
 
@@ -36,6 +37,7 @@ type
     property KonsoleMode: TKonsoleMode read FKonsoleMode write FKonsoleMode;
     property EnforceCaps: Boolean read FEnforceCaps write FEnforceCaps;
     property OnCharacter: TKeyPressEvent read FOnCharacter write FOnCharacter;
+    property Prompt: string read FPrompt write FPrompt;
   end;
 
 procedure Register;
@@ -72,10 +74,14 @@ begin
     Exit;
   if not Assigned(FOnCommand) then
     Exit;
-  params:=Lines.Strings[Lines.Count-1];
+  if (Length(FPrompt) > 0) and (LeftStr(Lines.Strings[Lines.Count-1], Length(FPrompt)) = FPrompt) then
+    params:=RightStr(Lines.Strings[Lines.Count-1], Length(Lines.Strings[Lines.Count-1])-Length(FPrompt))
+  else
+    params:=Lines.Strings[Lines.Count-1];
   cmd:=Copy2SpaceDel(params);
   FOnCommand(Self, cmd, params);
   Key:=#0;
+  Lines.Strings[Lines.Count]:=FPrompt;
 end;
 
 constructor TKonsole.Create(AOwner: TComponent);
@@ -88,6 +94,7 @@ begin
   Font.Size:=15;
   Font.Color:=clWhite;
   Color:=clBlack;
+  FPrompt:='';
 end;
 
 procedure TKonsole.SetColor(fg, bg: TColor);
@@ -99,6 +106,7 @@ end;
 procedure TKonsole.WriteLn(const s: string);
 begin
   Lines.Add(s);
+  Application.ProcessMessages;
 end;
 
 procedure TKonsole.Write(const s: string);
@@ -120,11 +128,13 @@ begin
   end;
   if prnt then
     Lines.Strings[Lines.Count-1]:=Lines.Strings[Lines.Count-1]+s;
+  Application.ProcessMessages;
 end;
 
 procedure TKonsole.ClrScr;
 begin
   Lines.Clear;
+  Application.ProcessMessages;
 end;
 
 initialization
