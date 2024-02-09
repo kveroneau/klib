@@ -35,6 +35,7 @@ type
     procedure Say(const msg: string);
     procedure UpdateConfig;
     procedure SetTimer(minutes: integer; msg: string);
+    procedure AppendSchedule(tm: string; stype: integer; msg: string);
   private
     CUResult: string;
     FConfig: TJSONObject;
@@ -378,12 +379,17 @@ begin
       KeepConnection:=False;
       data:=TStringList.Create;
       data.Add('minutes='+IntToStr(minutes));
-      data.Add('text='+msg);
+      data.Add('text='+EncodeURLElement(msg));
       CUResult:=FormPost(URL+'set_timer', data);
     finally
       data.Free;
       Free;
     end;
+end;
+
+procedure THomeCU.AppendSchedule(tm: string; stype: integer; msg: string);
+begin
+  HomeCUGet('tm?append='+tm+','+IntToStr(stype)+','+EncodeURLElement(msg));
 end;
 
 function THomeCU.GetRooms: boolean;

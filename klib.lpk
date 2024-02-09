@@ -14,7 +14,7 @@
       </CodeGeneration>
     </CompilerOptions>
     <Version Minor="15"/>
-    <Files Count="29">
+    <Files Count="30">
       <Item1>
         <Filename Value="unixsignals.pas"/>
         <UnitName Value="UnixSignals"/>
@@ -131,6 +131,10 @@
         <Filename Value="qvfsjson.pas"/>
         <UnitName Value="qvfsjson"/>
       </Item29>
+      <Item30>
+        <Filename Value="dbftojson.pas"/>
+        <UnitName Value="dbftojson"/>
+      </Item30>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="1">

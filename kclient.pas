@@ -108,9 +108,7 @@ begin
   sbuf:=TMemoryStream.Create;
   try
     sbuf.Write(buf^, size);
-    sbuf.SaveToFile('sbuf');
     sbuf.Position:=0;
-    WriteLn(sbuf.Size);
     try
       s:=sbuf.ReadAnsiString;
     except
