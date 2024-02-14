@@ -1,0 +1,128 @@
+object VMForm: TVMForm
+  Left = 406
+  Height = 372
+  Top = 209
+  Width = 599
+  Caption = 'VMForm'
+  ClientHeight = 372
+  ClientWidth = 599
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  LCLVersion = '2.2.6.0'
+  object Konsole1: TKonsole
+    Left = 168
+    Height = 216
+    Top = 0
+    Width = 432
+    Color = clBlack
+    Font.Color = clWhite
+    Font.Height = -20
+    Font.Name = 'Monospace'
+    Lines.Strings = (
+      'Konsole1'
+    )
+    ParentFont = False
+    TabOrder = 0
+    KonsoleMode = kmCommand
+    EnforceCaps = False
+  end
+  object SegmentDisplay1: TSegmentDisplay
+    Left = 184
+    Height = 90
+    Top = 240
+    Width = 50
+    Digit = 0
+    BackgroundColor = clBlack
+    ForegroundColor = clWhite
+  end
+  object SegmentDisplay2: TSegmentDisplay
+    Left = 248
+    Height = 90
+    Top = 240
+    Width = 50
+    Digit = 0
+    BackgroundColor = clBlack
+    ForegroundColor = clWhite
+  end
+  object SegmentDisplay3: TSegmentDisplay
+    Left = 312
+    Height = 90
+    Top = 240
+    Width = 50
+    Digit = 0
+    BackgroundColor = clBlack
+    ForegroundColor = clWhite
+  end
+  object SegmentDisplay4: TSegmentDisplay
+    Left = 376
+    Height = 90
+    Top = 240
+    Width = 50
+    Digit = 0
+    BackgroundColor = clBlack
+    ForegroundColor = clWhite
+  end
+  object MOS6502_1: TMOS6502
+    Active = False
+    Running = False
+    Device = T6502DeviceHub1
+    Memory = T6502Memory1
+    ResetVector = 8192
+    RegA = 0
+    RegX = 0
+    RegY = 0
+    RegAX = 0
+    RegP = []
+    RegS = 0
+    RegPC = 0
+    Left = 32
+    Top = 24
+  end
+  object TerminalCard1: TTerminalCard
+    Memo = Konsole1
+    Left = 35
+    Top = 232
+  end
+  object SegmentCard1: TSegmentCard
+    Segment1 = SegmentDisplay1
+    Segment2 = SegmentDisplay2
+    Segment3 = SegmentDisplay3
+    Segment4 = SegmentDisplay4
+    Left = 35
+    Top = 296
+  end
+  object T6502Memory1: T6502Memory
+    Active = False
+    ROM0 = T6502ROM1
+    Left = 35
+    Top = 96
+  end
+  object T6502ROM1: T6502ROM
+    Active = True
+    Address = 8192
+    ROMFile = 'tests/a.out'
+    Left = 112
+    Top = 24
+  end
+  object T6502CardSlots1: T6502CardSlots
+    Card0 = TerminalCard1
+    Card1 = SegmentCard1
+    Left = 36
+    Top = 168
+  end
+  object T6502DeviceHub1: T6502DeviceHub
+    Device0 = T6502CardSlots1
+    Device1 = T6502Storage1
+    Left = 104
+    Top = 152
+  end
+  object T6502Storage1: T6502Storage
+    LoadOnStart = False
+    FileName = 'tests/dump'
+    Address = 0
+    Pages = 255
+    Left = 112
+    Top = 224
+  end
+end

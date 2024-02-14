@@ -1,0 +1,64 @@
+object PrototypeMainForm: TPrototypeMainForm
+  Left = 302
+  Height = 375
+  Top = 160
+  Width = 599
+  Caption = 'Prototype One'
+  ClientHeight = 375
+  ClientWidth = 599
+  LCLVersion = '2.2.6.0'
+  object VM1Enabled: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 20
+    Width = 55
+    Caption = 'VM 1'
+    OnChange = VMClicked
+    TabOrder = 0
+  end
+  object VM2Enabled: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 56
+    Width = 55
+    Caption = 'VM 2'
+    OnChange = VMClicked
+    TabOrder = 1
+  end
+  object VM3Enabled: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 88
+    Width = 55
+    Caption = 'VM 3'
+    OnChange = VMClicked
+    TabOrder = 2
+  end
+  object VM4Enabled: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 120
+    Width = 55
+    Caption = 'VM 4'
+    OnChange = VMClicked
+    TabOrder = 3
+  end
+  object VM5Enabled: TCheckBox
+    Left = 16
+    Height = 21
+    Top = 160
+    Width = 55
+    Caption = 'VM 5'
+    OnChange = VMClicked
+    TabOrder = 4
+  end
+  object Button1: TButton
+    Left = 59
+    Height = 25
+    Top = 232
+    Width = 75
+    Caption = 'Button1'
+    OnClick = Button1Click
+    TabOrder = 5
+  end
+end

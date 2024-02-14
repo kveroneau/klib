@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Package Version="5">
+    <Name Value="HMLib"/>
+    <Type Value="RunAndDesignTime"/>
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+    </CompilerOptions>
+    <Version Minor="1"/>
+    <Files>
+      <Item>
+        <Filename Value="mos6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="MOS6502"/>
+      </Item>
+      <Item>
+        <Filename Value="dev6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Dev6502"/>
+      </Item>
+      <Item>
+        <Filename Value="card6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Card6502"/>
+      </Item>
+      <Item>
+        <Filename Value="terminalcard.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="TerminalCard"/>
+      </Item>
+      <Item>
+        <Filename Value="segmentcard.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="SegmentCard"/>
+      </Item>
+      <Item>
+        <Filename Value="memory6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Memory6502"/>
+      </Item>
+      <Item>
+        <Filename Value="rom6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="rom6502"/>
+      </Item>
+      <Item>
+        <Filename Value="thread6502.pas"/>
+        <UnitName Value="thread6502"/>
+      </Item>
+      <Item>
+        <Filename Value="storage6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Storage6502"/>
+      </Item>
+      <Item>
+        <Filename Value="cardslots6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="CardSlots6502"/>
+      </Item>
+      <Item>
+        <Filename Value="devicehub6502.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="DeviceHub6502"/>
+      </Item>
+    </Files>
+    <RequiredPkgs>
+      <Item>
+        <PackageName Value="HUDControls"/>
+      </Item>
+      <Item>
+        <PackageName Value="LCLBase"/>
+      </Item>
+      <Item>
+        <PackageName Value="klib"/>
+        <MinVersion Minor="11" Valid="True"/>
+      </Item>
+      <Item>
+        <PackageName Value="FCL"/>
+      </Item>
+    </RequiredPkgs>
+    <UsageOptions>
+      <UnitPath Value="$(PkgOutDir)"/>
+    </UsageOptions>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+  </Package>
+</CONFIG>
