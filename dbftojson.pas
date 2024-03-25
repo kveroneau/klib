@@ -9,7 +9,7 @@ unit dbftojson;
 interface
 
 uses
-  Classes, SysUtils, DB, fpjson;
+  Classes, SysUtils, DB, fpjson, DateUtils;
 
 function ExportDBF(DataSet: TDataSet): TJSONObject;
 
@@ -33,8 +33,10 @@ begin
     field.Strings['name']:=fd.Name;
     if (fd.DataType = ftAutoInc) or (fd.DataType = ftInteger) then
       field.Strings['type']:='int'
-    else if fd.DataType = ftString then
-      field.Strings['type']:='string';
+    else if (fd.DataType = ftString) or (fd.DataType = ftMemo) then
+      field.Strings['type']:='string'
+    else if fd.DataType = ftDateTime then
+      field.Strings['type']:='date';
     fields.Add(field);
   end;
   md.Add('fields', fields);
@@ -50,8 +52,10 @@ begin
         fd:=DataSet.FieldDefs.Items[i];
         if (fd.DataType = ftAutoInc) or (fd.DataType = ftInteger) then
           field.Add(fd.Name, DataSet.Fields.Fields[i].AsInteger)
-        else if fd.DataType = ftString then
-          field.Add(fd.Name, DataSet.Fields.Fields[i].AsString);
+        else if (fd.DataType = ftString) or (fd.DataType = ftMemo) then
+          field.Add(fd.Name, DataSet.Fields.Fields[i].AsString)
+        else if fd.DataType = ftDateTime then
+          field.Add(fd.Name, DateToISO8601(DataSet.Fields.Fields[i].AsDateTime));
       end;
       data.Add(field);
       Next;
